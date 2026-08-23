@@ -1,11 +1,16 @@
-/* AllDmSearch Modal & UI Styles - Premium Discord Mobile Replica */
+/* AllDmSearch Modal & UI Styles - Full Width Mobile Replica */
 
+div:has(> .vc-alldm-container),
+[class*="modal_"]:has(.vc-alldm-container),
+[class*="root_"]:has(.vc-alldm-container),
+div[role="dialog"]:has(.vc-alldm-container),
+div[class*="layer_"]:has(.vc-alldm-container) > div,
 .vc-alldm-modal-root {
-  width: 820px !important;
-  max-width: 94vw !important;
-  min-width: 680px !important;
+  width: 860px !important;
+  max-width: 95vw !important;
+  min-width: 720px !important;
   height: 86vh !important;
-  max-height: 880px !important;
+  max-height: 900px !important;
   background: #111214 !important;
   border-radius: 16px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -16,14 +21,15 @@
 }
 
 .vc-alldm-container {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   background: #111214;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #dbdee1;
+  box-sizing: border-box;
 }
 
 /* Header & Search Bar */
@@ -79,6 +85,7 @@
   color: #fff;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
 .vc-alldm-input:focus {
@@ -194,7 +201,7 @@
 .vc-alldm-results-scroll {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   padding: 12px 20px;
 }
 
@@ -243,6 +250,7 @@
   border: 1px solid transparent;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .vc-alldm-result-card:hover {
@@ -262,6 +270,7 @@
 .vc-alldm-card-body {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .vc-alldm-card-header {
@@ -306,6 +315,7 @@
   line-height: 1.5;
   word-break: break-word;
   white-space: pre-wrap;
+  overflow: hidden;
 }
 
 /* Search Term Highlighting */

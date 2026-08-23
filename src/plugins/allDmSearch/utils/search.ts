@@ -151,14 +151,49 @@ export async function searchAllDMs(
     return cached.results;
   }
 
-  // 1. Gather all accessible DM channels
-  const allPrivate = ChannelStore.getSortedPrivateChannels?.() || [];
-  const targetChannels = allPrivate.filter((c: any) => {
-    if (c.isDM && c.isDM()) return true;
-    if (c.isGroupDM && c.isGroupDM()) return options.searchGroupDms;
-    return false;
-  });
+  // 1. Gather all accessible DM and Group DM channels from all stores
+  const channelMap = new Map<string, any>();
 
+  // A. Sorted private channels (open DMs)
+  const sortedPrivate = ChannelStore.getSortedPrivateChannels?.() || [];
+  for (const c of sortedPrivate) {
+    if (c && c.id) {
+      if (c.isDM?.() || c.type === 1 || (options.searchGroupDms && (c.isGroupDM?.() || c.type === 3))) {
+        channelMap.set(c.id, c);
+      }
+    }
+  }
+
+  // B. General ChannelStore private/all channels
+  const allPrivate = ChannelStore.getPrivateChannels?.() || ChannelStore.getChannels?.() || {};
+  for (const key in allPrivate) {
+    const c = allPrivate[key];
+    if (c && c.id && !channelMap.has(c.id)) {
+      if (c.isDM?.() || c.type === 1 || (options.searchGroupDms && (c.isGroupDM?.() || c.type === 3))) {
+        channelMap.set(c.id, c);
+      }
+    }
+  }
+
+  // C. All Friends DM channels (even if closed / not currently open in sidebar)
+  const friendIds: string[] = (RelationshipStore as any)?.getFriendIDs?.() || [];
+  for (const fId of friendIds) {
+    const dmChanId =
+      (ChannelStore as any)?.getDMFromUserId?.(fId) ||
+      (ChannelStore as any)?.getDMChannelId?.(fId);
+
+    if (dmChanId && !channelMap.has(dmChanId)) {
+      const chan = ChannelStore.getChannel?.(dmChanId) || {
+        id: dmChanId,
+        isDM: () => true,
+        type: 1,
+        recipients: [fId],
+      };
+      channelMap.set(dmChanId, chan);
+    }
+  }
+
+  const targetChannels = Array.from(channelMap.values());
   const totalChannels = targetChannels.length;
   if (totalChannels === 0) return [];
 
@@ -174,8 +209,8 @@ export async function searchAllDMs(
     isSearching: true,
   });
 
-  // Fast Worker Pool: 8 concurrent workers with instant result streaming
-  const CONCURRENCY = 8;
+  // Fast Worker Pool: 10 concurrent workers with instant result streaming
+  const CONCURRENCY = 10;
   let currentIndex = 0;
 
   async function worker(): Promise<void> {
